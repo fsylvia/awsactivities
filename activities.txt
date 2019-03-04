@@ -1,0 +1,227 @@
+Activity 1:
+Create Ec2 instance:
+aws ec2 run-instances --image-id  ami-0664a710233d7c148 --count  1 --instance-type t2.micro  --key-name FirstEc2Kp  --security-group-ids  sg-0e36056dfcdfb5035
+aws ec2 create-tags --resources i-014eef63ea1b207e7 --tags Key=Name,Value=MyFirstEc2Instance
+
+ Select Ami : set amiid
+Instance-type : set t2.micro
+Count : 1
+Tags : name : MyFirstEc2Instance
+Security-group : set id
+Create new security group: myfirstsecuritygroup. Allowssh on port 22 and set source as public 0.0.0.0/0
+aws ec2 describe-vpcs
+aws ec2 create-security-group --group-name myfirstsg --description "My first security group" --vpc-id vpc-f2cf549a
+
+aws ec2 authorize-security-group-ingress --group-name myfirstsg --protocol tcp --port 22 --cidr 0.0.0.0/0
+
+Create keypair. Download keypair and launch instance.
+aws ec2 create-key-pair --key-name FirstEc2Kp --query 'KeyMaterial' --output text > FirstEc2Kp.pem
+
+aws ec2 describe-key-pairs --key-name FirstEc2Kp
+
+Activity 2:
+SSh into ec2 instance : MyFirstEc2Instance (i-014eef63ea1b207e7)
+aws ec2 start-instances --instance-ids i-014eef63ea1b207e7 
+aws ec2 describe-instances --filters "Name=tag:Name,Values=MyFirstEc2Instance" --query "Reservations[*].Instances[*].PublicIpAddress"
+
+Get ip address : 3.8.177.206
+ssh -i ~/awspractice/FirstEc2Kp.pem ec2-user@3.8.177.206
+
+errors out since pem file has 0640 permission. Modify permission to readonly
+chmod 0400 ~/awspractice/FirstEc2Kp.pem
+ssh -i ~/awspractice/FirstEc2Kp.pem ec2-user@3.8.177.206
+
+test : connects to ec2 machine. Should be able to ping google from here.
+Whoami results ec2-user
+To exit from ec2 : exit or ctrl d (to logut and exit)
+Activity 3: Experiment with security group:
+Remove ssh access to ec2:
+aws ec2 revoke-security-group-ingress --group-name myfirstsg --protocol tcp --port 22 --cidr 0.0.0.0/0
+
+test ssh into ec2 by following previous experiment.
+Does not respond, continues to wait, since security group is a layer outside the ec2, it blocks the ssh traffic, so the ec2 is not even aware of the request.
+Add inboud rule:
+aws ec2 authorize-security-group-ingress --group-name myfirstsg --protocol tcp --port 22 --cidr 0.0.0.0/0
+Again ssh and it will work
+
+Activity 4:
+Replace public ip with private ip and ssh into machine. Note results.
+aws ec2 describe-instances --filters "Name=tag:Name,Values=MyFirstEc2Instance" --query "Reservations[*].Instances[*].PrivateIpAddress"
+
+private ip : 172.31.26.195
+
+try ssh with this
+
+command does not respond because private ip not accessible from outside
+ssh -i ~/awspractice/FirstEc2Kp.pem ec2-user@3.8.177.206 
+works with public ip
+stop ec2 instance.
+
+aws ec2 stop-instances --instance-ids i-014eef63ea1b207e7
+
+
+aws ec2 start-instances --instance-ids i-014eef63ea1b207e7
+
+aws ec2 describe-instances --filters "Name=tag:Name,Values=MyFirstEc2Instance" --query "Reservations[*].Instances[*].PublicIpAddress"
+notice the public ip address has changed
+ssh -i ~/awspractice/FirstEc2Kp.pem ec2-user@18.130.131.34
+
+now ssh works fine private ip : 172-31-26-195 . It is the same as noted above.
+
+Elastic IP:
+
+Allocate address for an ip
+aws ec2 allocate-address --domain vpc
+{                                                                                   
+    "PublicIp": "3.9.28.94",                                                        
+    "AllocationId": "eipalloc-02649206ba2413dba",                                 
+    "PublicIpv4Pool": "amazon",                                                     
+    "Domain": "vpc"                                                                 
+}  
+
+associate ip to ec2 instance
+aws ec2 associate-address --instance-id i-014eef63ea1b207e7 --allocation-id eipalloc-02649206ba2413dba
+
+{                                                                                   │[
+    "AssociationId": "eipassoc-03d48527f7eb1aebe"                                   │    [
+}
+
+ssh -i ~/awspractice/FirstEc2Kp.pem ec2-user@3.9.28.94
+
+connects fine.
+Stop ec2 and start again
+
+ssh -i ~/awspractice/FirstEc2Kp.pem ec2-user@3.9.28.94
+
+connects without ip change
+
+aws ec2 disassociate-address --association-id eipassoc-03d48527f7eb1aebe
+
+aws ec2 release-address --allocation-id eipalloc-02649206ba2413dba
+
+quickly disassociate elastic ip from ec2 and release address
+
+Activity 5
+Install Apache on Ec2 and display index.html
+Get ec2 instance id
+Start ec2 instance 
+Get public ip
+Ssh into ec2 instance
+
+Run commands:
+Sudo su
+Yum update –y
+Yum install –y httpd.x86_64
+Systemctl start httpd.service
+Systemctl enable httpd.service
+Curl localhost:80 – works
+Try the same using the public ip from the browser
+
+Does not respond. Timeout
+ Because security group is not allowing inbound traffic from http.
+
+aws ec2 authorize-security-group-ingress --group-id sg-0e36056dfcdfb5035 --ip-permissions IpProtocol=tcp,FromPort=80,ToPort=80,IpRanges=[{CidrIp=0.0.0.0/0}]
+
+try 35.176.89.123 from firefox. It works
+echo “hello world from $(hostname -f)” > /var/www/html/index.html
+
+try 35.176.89.123 from firefox. It works
+
+
+Activity 6: Bootstrap ec2 instance
+
+
+Terminate instance
+aws ec2 terminate-instances --instance-id i-014eef63ea1b207e7
+
+Launch new instance with userdata
+#!/bin/bash
+
+sudo su
+
+yum update –y
+yum install –y httpd.x86_64
+systemctl start httpd.service
+systemctl enable httpd.service
+
+
+echo “hello world from $(hostname -f)” > /var/www/html/index.html
+
+
+aws ec2 run-instances --image-id  ami-0664a710233d7c148 --count  1 --instance-type t2.micro  --key-name FirstEc2Kp  --security-group-ids  sg-0e36056dfcdfb5035  --user-data file://ec2-basics.txt
+aws ec2 create-tags --resources i-024a400ca690ab08d --tags Key=Name,Value=Ec2WS1
+
+
+Activity 7:
+Creating an Application Load Balancer
+
+Confirm if your version of cli supports load balancers
+aws elbv2 help
+
+create a new security group for ALB
+
+aws ec2 create-security-group --group-name sgforalb --description "Security group for load balancer" --vpc-id vpc-f2cf549a
+
+configure inbound rules for http at port 80
+aws ec2 authorize-security-group-ingress --group-name sgforalb --protocol tcp --port 80 --cidr 0.0.0.0/0
+
+Find the subnet ids in the required availability zones
+aws ec2 describe-subnets --query "Subnets[*].SubnetId" –filters "Name=vpc-id,Values=vpc-f2cf549a"
+
+[                                                                                   
+    "subnet-eb2b4682",                                                              
+    "subnet-98359be2",                                                            
+    "subnet-82ea16ce"                                                               
+]
+
+aws elbv2 create-load-balancer --name webalbfs --subnets subnet-eb2b4682   subnet-98359be2  subnet-82ea16ce  --security-groups sg-04a3067202a5de45f
+
+Create a target group using the same vpc as that of the instances
+
+aws elbv2 create-target-group --name fs-target-grp --protocol HTTP --port 80  --vpc-id vpc-f2cf549a
+
+
+Register Ec2 instances to this targetgroup
+aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:eu-west-2:558197791064:targetgroup/fs-target-grp/e42ec12841bfa0d4 --targets Id=i-024a400ca690ab08d
+
+aws elbv2 describe-load-balancers --query "LoadBalancers[*].LoadBalancerArn"
+Use the create-listener command to create a listener for your load balancer with a default rule that forwards requests to your target group:
+aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:eu-west-2:558197791064:loadbalancer/app/webalbfs/a1228a54f1808619 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:eu-west-2:558197791064:targetgroup/fs-target-grp/e42ec12841bfa0d4
+
+verify health of target group
+aws elbv2 describe-target-health --target-group-arn arn:aws:elasticloadbalancing:eu-west-2:558197791064:targetgroup/fs-target-grp/e42ec12841bfa0d4
+
+aws elbv2 describe-load-balancers --query "LoadBalancers[*].DNSName"
+
+Allow web app to be access only using load balancer dns and not ec2 ip.
+Modify security group of ec2 instance to allow traffic only from load balancer security group on port 80.
+aws ec2 revoke-security-group-ingress --group-name myfirstsg --protocol tcp --port 80 --cidr 0.0.0.0/0
+aws ec2 describe-security-groups --group-name sgforalb --query "SecurityGroups[*].OwnerId"
+
+copy ownerid and input in below command
+
+aws ec2 authorize-security-group-ingress --group-name myfirstsg --protocol tcp --port 80 --source-group sgforalb --group-owner 558197791064
+
+Activity 8 :
+Configure Auto Scaling Group
+aws elbv2 describe-load-balancers --query "LoadBalancers[*].LoadBalancerName"
+
+Create Launch configuration
+aws autoscaling create-launch-configuration --launch-configuration-name fs-first-lc --key-name FirstEc2Kp --image-id ami-0664a710233d7c148 --instance-type t2.micro --security-groups  sg-0e36056dfcdfb5035  --user-data file://ec2-basics.txt
+
+
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name my-auto-scaling-group --launch-configuration-name fs-first-lc --min-size 1 --max-size 3 --vpc-zone-identifier subnet-eb2b4682,subnet-98359be2,subnet-82ea16ce --target-group-arns arn:aws:elasticloadbalancing:eu-west-2:558197791064:targetgroup/fs-target-grp/e42ec12841bfa0d4 --health-check-type ELB --health-check-grace-period 120
+
+Create scaling policy:
+TODO : Read and analyze more.
+Notice there is one additional ec2 instance and it is added to the target group. Terminate the Ec2 instance that we created manually.
+aws ec2 terminate-instances --instance-id  i-024a400ca690ab08d
+
+aws autoscaling update-auto-scaling-group --auto-scaling-group-name my-auto-scaling-group --desired-capacity 2
+
+
+
+
+
+
+
