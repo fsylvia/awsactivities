@@ -219,6 +219,10 @@ aws ec2 terminate-instances --instance-id  i-024a400ca690ab08d
 
 aws autoscaling update-auto-scaling-group --auto-scaling-group-name my-auto-scaling-group --desired-capacity 2
 
+Change to 1 since to retain within free tier usage since you will be billed if multiple Ec2 servers are running
+aws autoscaling update-auto-scaling-group --auto-scaling-group-name my-auto-scaling-group --desired-capacity 1
+
+
 
 
 
