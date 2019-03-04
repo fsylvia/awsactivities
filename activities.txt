@@ -1,4 +1,5 @@
 Activity 1:
+=================
 Create Ec2 instance:
 aws ec2 run-instances --image-id  ami-0664a710233d7c148 --count  1 --instance-type t2.micro  --key-name FirstEc2Kp  --security-group-ids  sg-0e36056dfcdfb5035
 aws ec2 create-tags --resources i-014eef63ea1b207e7 --tags Key=Name,Value=MyFirstEc2Instance
@@ -18,8 +19,9 @@ Create keypair. Download keypair and launch instance.
 aws ec2 create-key-pair --key-name FirstEc2Kp --query 'KeyMaterial' --output text > FirstEc2Kp.pem
 
 aws ec2 describe-key-pairs --key-name FirstEc2Kp
-
+==============================================================================================================================================================
 Activity 2:
+=================
 SSh into ec2 instance : MyFirstEc2Instance (i-014eef63ea1b207e7)
 aws ec2 start-instances --instance-ids i-014eef63ea1b207e7 
 aws ec2 describe-instances --filters "Name=tag:Name,Values=MyFirstEc2Instance" --query "Reservations[*].Instances[*].PublicIpAddress"
@@ -34,7 +36,9 @@ ssh -i ~/awspractice/FirstEc2Kp.pem ec2-user@3.8.177.206
 test : connects to ec2 machine. Should be able to ping google from here.
 Whoami results ec2-user
 To exit from ec2 : exit or ctrl d (to logut and exit)
+==============================================================================================================================================================
 Activity 3: Experiment with security group:
+=================
 Remove ssh access to ec2:
 aws ec2 revoke-security-group-ingress --group-name myfirstsg --protocol tcp --port 22 --cidr 0.0.0.0/0
 
@@ -43,8 +47,9 @@ Does not respond, continues to wait, since security group is a layer outside the
 Add inboud rule:
 aws ec2 authorize-security-group-ingress --group-name myfirstsg --protocol tcp --port 22 --cidr 0.0.0.0/0
 Again ssh and it will work
-
+==============================================================================================================================================================
 Activity 4:
+=================
 Replace public ip with private ip and ssh into machine. Note results.
 aws ec2 describe-instances --filters "Name=tag:Name,Values=MyFirstEc2Instance" --query "Reservations[*].Instances[*].PrivateIpAddress"
 
@@ -100,8 +105,9 @@ aws ec2 disassociate-address --association-id eipassoc-03d48527f7eb1aebe
 aws ec2 release-address --allocation-id eipalloc-02649206ba2413dba
 
 quickly disassociate elastic ip from ec2 and release address
-
+==============================================================================================================================================================
 Activity 5
+=================
 Install Apache on Ec2 and display index.html
 Get ec2 instance id
 Start ec2 instance 
@@ -127,9 +133,9 @@ echo “hello world from $(hostname -f)” > /var/www/html/index.html
 
 try 35.176.89.123 from firefox. It works
 
-
+==============================================================================================================================================================
 Activity 6: Bootstrap ec2 instance
-
+=================
 
 Terminate instance
 aws ec2 terminate-instances --instance-id i-014eef63ea1b207e7
@@ -150,9 +156,10 @@ echo “hello world from $(hostname -f)” > /var/www/html/index.html
 
 aws ec2 run-instances --image-id  ami-0664a710233d7c148 --count  1 --instance-type t2.micro  --key-name FirstEc2Kp  --security-group-ids  sg-0e36056dfcdfb5035  --user-data file://ec2-basics.txt
 aws ec2 create-tags --resources i-024a400ca690ab08d --tags Key=Name,Value=Ec2WS1
-
+==============================================================================================================================================================
 
 Activity 7:
+=================
 Creating an Application Load Balancer
 
 Confirm if your version of cli supports load balancers
@@ -201,8 +208,9 @@ aws ec2 describe-security-groups --group-name sgforalb --query "SecurityGroups[*
 copy ownerid and input in below command
 
 aws ec2 authorize-security-group-ingress --group-name myfirstsg --protocol tcp --port 80 --source-group sgforalb --group-owner 558197791064
-
+==============================================================================================================================================================
 Activity 8 :
+=================
 Configure Auto Scaling Group
 aws elbv2 describe-load-balancers --query "LoadBalancers[*].LoadBalancerName"
 
@@ -221,11 +229,81 @@ aws autoscaling update-auto-scaling-group --auto-scaling-group-name my-auto-scal
 
 Change to 1 since to retain within free tier usage since you will be billed if multiple Ec2 servers are running
 aws autoscaling update-auto-scaling-group --auto-scaling-group-name my-auto-scaling-group --desired-capacity 1
+==============================================================================================================================================================
+Activity 9: Route53
+=================
+Step1 : Register a public domain.
+Step2 : Create a hosted zone
+Step 3: Create a record set. of type A record that routes your domain to the dns of the elb.
+Step 4 : Create a cname record set to map a url to url. this is not best practice.
+==============================================================================================================================================================
+Activity 10:
+=================
+Step 1: Create DB instance
 
+Note: Free tier usage only available for MySQL, MariaDB, PostgreSql, Oracle, Microsoft Sql Server. 
+The Amazon RDS Free Tier provides a single db.t2.micro instance as well as up to 20 GiB of storage
+Making the Db instance publicly accessible to test from MySql client workbench. Ideally it should be accessible only from Ec2 instance.
 
+Db Security groups are used with Db instances that are not in the VPC and on the EC@-classic platform. DB security group rules apply to inboud traffic only.
 
+Each VPC security group rule enables a specific source to access a DB instance in a VPC that is associated with that VPC security group
 
+aws ec2 create-security-group --group-name fsmysqlsg --description "My SG for MySQL instance" --vpc-id vpc-f2cf549a
 
+aws ec2 authorize-security-group-ingress --group-name fsmysqlsg --protocol tcp --port 3306 --cidr 0.0.0.0/0
 
+aws rds create-db-instance --allocated-storage 20 --db-instance-class db.t2.micro --engine mysql --db-instance-identifier fsawsdb --master-username fsroot --master-user-password fssecret --publicly-accessible --vpc-security-group-ids sg-09bd2271d09c0e403
 
+==============================================================================================================================================================
+Activity 11: Experiment with Elasticache
+=================
 
+https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/WhatIs.html
+==============================================================================================================================================================
+Activity 12: Experiment with S3
+aws s3 mb s3://fsawspractice
+default region : region that is set when configuring the aws cli.
+aws s3api   get-bucket-location --bucket fsawspractice
+
+{
+    "LocationConstraint": "eu-west-2"
+}
+ null if region set to us-east-1 : test later
+ 
+aws s3api create-bucket --bucket my-bucket --region us-east-1
+
+upload a image file
+
+aws s3 cp awspractice/img/logo.jpg s3://fsawspractice/logo.jpg
+
+creating a folder like structure.
+
+aws s3 cp awspractice/img/test.jpg s3://fsawspractice/test/test.jpg
+
+grant read permission to everyone for an object
+
+aws s3api put-object-acl --bucket fsawspractice --key test/test.jpg --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+
+get url for uploaded image.
+
+Set versioning for a bucket
+aws s3api put-bucket-versioning --bucket fsawspractice --versioning-configuration Status=Enabled
+aws s3api get-bucket-versioning --bucket fsawspractice
+set properties : versioning. encryption, set default encryption.
+
+upload a new file. upload a file already present and notice the difference.
+
+Encrypt a file.
+ aws s3api put-object --bucket fsawspractice --key test.jpg --body awspractice/img/test.jpg  --server-side-encryption AES256 --acl public-read
+ 
+bucket level encryption : default encryption
+aws s3api put-bucket-encryption --bucket fsawspractice --server-side-encryption-configuration {\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"AES256\"}}]}
+aws s3api get-bucket-encryption --bucket fsawspractice
+
+ bucket policy. 
+ cors
+ public website
+Rename, delete, cut, paste. 
+
+==============================================================================================================================================================
