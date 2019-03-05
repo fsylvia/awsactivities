@@ -294,6 +294,9 @@ set properties : versioning. encryption, set default encryption.
 
 upload a new file. upload a file already present and notice the difference.
 
+cleanup: disable versioning
+aws s3api put-bucket-versioning --bucket fsawspractice --versioning-configuration Status=Suspended
+
 Encrypt a file.
  aws s3api put-object --bucket fsawspractice --key test.jpg --body awspractice/img/test.jpg  --server-side-encryption AES256 --acl public-read
  
@@ -301,9 +304,83 @@ bucket level encryption : default encryption
 aws s3api put-bucket-encryption --bucket fsawspractice --server-side-encryption-configuration {\"Rules\":[{\"ApplyServerSideEncryptionByDefault\":{\"SSEAlgorithm\":\"AES256\"}}]}
 aws s3api get-bucket-encryption --bucket fsawspractice
 
- bucket policy. 
- cors
- public website
-Rename, delete, cut, paste. 
+disable default encryption
+  aws s3api delete-bucket-encryption --bucket fsawspractice
+  
+set bucket-policy to allow only AES256 encrypted objects to be uploaded
+generate required json using : http://awspolicygen.s3.amazonaws.com/policygen.html
 
+aws s3api put-bucket-policy --bucket fsawspractice --policy file://awspractice/bpolicy.json  
+
+test : upload a file without encryption
+[flora@aws-client ~]$ aws s3api put-object --bucket fsawspractice --key test.jpg --body awspractice/img/test.jpg
+
+An error occurred (AccessDenied) when calling the PutObject operation: Access Denied
+
+test: upload a file with SES:KMS encryption
+[flora@aws-client ~]$ aws s3api put-object --bucket fsawspractice --key test.jpg --body awspractice/img/test.jpg --server-side-encryption aws:kms
+
+An error occurred (AccessDenied) when calling the PutObject operation: Access Denied
+
+test: upload a file with AES256 encryption
+[flora@aws-client ~]$ aws s3api put-object --bucket fsawspractice --key test.jpg --body awspractice/img/test.jpg --server-side-encryption AES256
+{
+    "ETag": "\"be98d2888a8c0411016a5b49e007abd7\"",
+    "ServerSideEncryption": "AES256",
+    "VersionId": "5LrM0PmVsA71d5WvrtCAK4LhxG4Hy4an"
+}
+
+cleanup: delete bucket policy
+aws s3api delete-bucket-policy --bucket fsawspractice
+Setup a static website on aws:
+. create a simple html file that refers an image uploaded in s3 bucket.
+upload index.html file
+
+aws s3 cp index.html s3://fsawspractice/index.html
+set static hosting
+aws s3api put-bucket-website --bucket fsawspractice --website-configuration {\"IndexDocument\":{\"Suffix\":\"index.html\"}}
+
+get static website endpoint
+http://%bucketname%.s3-website.%region%.amazonaws.com
+http://fsawspractice.s3-website.eu-west-2.amazonaws.com
+
+
+get 403 error. add bucket policy
+generate a bucket policy that allows all users to getObject from the resources in this bucket.
+aws s3api put-bucket-policy --bucket fsawspractice --policy file://awspractice/go-bpolicy.json  
+
+cleanup: delete static-website, delete-bucket-policy
+aws s3api delete-bucket-policy --bucket fsawspractice
+aws s3api delete-bucket-website --bucket fsawspractice
+
+enable cors : test it out
+aws s3api put-bucket-cors --bucket MyBucket --cors-configuration file://cors.json
+ cor.json example
+ {
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["http://www.example.com"],
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["PUT", "POST", "DELETE"],
+      "MaxAgeSeconds": 3000,
+      "ExposeHeaders": ["x-amz-server-side-encryption"]
+    },
+    {
+      "AllowedOrigins": ["*"],
+      "AllowedHeaders": ["Authorization"],
+      "AllowedMethods": ["GET"],
+      "MaxAgeSeconds": 3000
+    }
+  ]
+}
+
+clean up : delete cors
+aws s3 delete-bucket-cors --bucket fsawspractice
+
+Rename - object 
+ aws s3 mv s3://fsawspractice/logo.jpg s3://fsawspractice/log.jpg
+Delete - object
+aws s3 rm s3://fsawspractice/log.jpg
+
+if cp, mv, rm are used with --recursive then it is for the bucket else for the object
 ==============================================================================================================================================================
