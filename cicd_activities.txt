@@ -1,0 +1,24 @@
+Activities CICD
+============================
+
+Activity 1: CodeCommit
+============================
+1. vreate a repository
+2. configure notification : cloudwatch
+3. create sns topic, manage subscriptions
+4. updload file
+5. create trigger
+============================================================================================================================================
+ Activity 2 : Code Commit Security
+ ==================================
+ 
+ 1. ssh keys for aws code commit
+ upload ssh public key
+ 2. https git credentials for aws code commit
+ generate https credentials
+ 3. install git on linux
+ 4. get clone url
+ 5. add code. git status, git add, git commit -m "", git push.
+ 6. check codecommit if all files have been added to CodeCommit
+ ============================================================================================================================================
+ 
