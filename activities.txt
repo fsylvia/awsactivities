@@ -384,3 +384,89 @@ aws s3 rm s3://fsawspractice/log.jpg
 
 if cp, mv, rm are used with --recursive then it is for the bucket else for the object
 ==============================================================================================================================================================
+Activity 13: Aws cli on Ec2
+========================================
+How to use aws cli on your EC2 instance. 2 methods : aws configure and configure your credentials (bad practice). or use IAM roles 
+
+[flora@aws-client ~]$ aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress"
+
+
+ssh into ec2 instance
+ ssh -i ~/awspractice/FirstEc2Kp.pem ec2-user@35.178.188.149
+ 
+Since Ec2 AMI is Amazon Linux 2 , aws is already installed. Check aws cli.  
+[ec2-user@ip-172-31-5-19 ~]$ aws --version                                      
+Output : aws-cli/1.16.102 Python/2.7.14 Linux/4.14.88-88.76.amzn2.x86_64 botocore/1.12.92 
+
+aws configure
+
+Do not enter your access if or key since it is a security risk. Configure just your region.
+[ec2-user@ip-172-31-5-19 ~]$ aws configure                                          
+AWS Access Key ID [None]:                                                           
+AWS Secret Access Key [None]:                                                       
+Default region name [None]: eu-west-2                                               
+Default output format [None]: 
+
+
+create IAM Role.
+
+content of file://awspractice/ec2AssumeRolePolicy.json
+{
+   "Version": "2012-10-17",
+   "Statement": [
+   {
+     "Effect": "Allow",
+     "Principal": {
+        "Service": "ec2.amazonaws.com"
+     },
+   "Action": "sts:AssumeRole"
+   }
+ ]
+}
+
+[flora@aws-client ~]$ aws iam create-role --role-name FsEc2Role --assume-role-policy-document file://awspractice/ec2AssumeRolePolicy.json
+{
+    "Role": {
+        "Path": "/",
+        "RoleName": "FsEc2Role",
+        "RoleId": "AROAI3YCRBIBYMOYQVLK4",
+        "Arn": "arn:aws:iam::558197791064:role/FsEc2Role",
+        "CreateDate": "2019-03-05T12:06:54Z",
+        "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "ec2.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+    }
+}
+[flora@aws-client ~]$ aws iam attach-role-policy --role-name FsEc2Role --policy-arn arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+aws iam  update-role-description --role-name FsEc2Role --description "Allow Ec2 to make read only api calls to s3"
+
+aws iam create-instance-profile --instance-profile-name FsEc2Role-Instance-Profile
+aws iam add-role-to-instance-profile --role-name FsEc2Role --instance-profile-name FsEc2Role-Instance-Profile
+
+aws ec2 describe-instances --query "Reservations[*].Instances[*].InstanceId" 
+
+aws ec2 associate-iam-instance-profile --instance-id i-0a9366080fe159fff --iam-instance-profile Name=FsEc2Role-Instance-Profile
+
+test by making s3 read only calls inside ec2 using cli.
+[ec2-user@ip-172-31-5-19 ~]$ aws s3 ls
+2019-03-05 06:41:49 fsawspractice
+[ec2-user@ip-172-31-5-19 ~]$ aws s3 ls s3://fsawspractice
+							PRE test/
+2019-03-05 06:03:24        	179 index.html
+2019-03-05 05:46:39      	89229 test.jpg
+
+[ec2-user@ip-172-31-5-19 ~]$ aws s3 mb s3://testwritebucket
+make_bucket failed: s3://testwritebucket An error occurred (AccessDenied) when calling the CreateBucket operation: Access Denied
+        
+Fails since Ec2 has an IAM role that can make only read only S3 api calls.
+
+==============================================================================================================================================================
