@@ -470,3 +470,117 @@ make_bucket failed: s3://testwritebucket An error occurred (AccessDenied) when c
 Fails since Ec2 has an IAM role that can make only read only S3 api calls.
 
 ==============================================================================================================================================================
+
+Activity 14: Policy Simulator. TODO
+=======================================
+simulate-principal-policy
+simulate-custom-policy
+==============================================================================================================================================================
+Activity 15: Dry Run. TODO
+=======================================
+ssh into ec2 
+and execute below to run-instances to check if we have the required permission, 
+if we do, it will not create the instance 
+but if we dont we will get the  access denied error.
+aws ec2 run-instances --dry-run --image-id  ami-0664a710233d7c148 --count  1 --instance-type t2.micro  --key-name FirstEc2Kp  --security-group-ids  sg-0e36056dfcdfb5035
+
+[ec2-user@ip-172-31-5-19 ~]$ aws ec2 run-instances --dry-run --image-id  ami-0664a710233d7c148 --count  1 --instance-type t2.micro  --key-name FirstEc2Kp  --security-
+group-ids  sg-0e36056dfcdfb5035
+
+An error occurred (UnauthorizedOperation) when calling the RunInstances operation:
+You are not authorized to perform this operation. Encoded authorization failure message: r_Jrs3IJR8jqrvbB6z7WKv1aOA9eXUuiiMivmVdZAX4CkdKae-Po-TQgnavyBhGE6UuV8nZ3eUqCr
+JuZ1Br06hf8gaokN83B9k48ieyTNQZ-arQsjLGUaAE6FGFH_7n_1YUuVeTuUlRBmYR7OIq0YEenComWupG1WGrYhLYhReHF2jfP5ISlb1tWCi50XlSpts_zwSxEhpFUkfSsUOSpQYuuy-O_3Gwp9PaUFYjXOxIFQNzcLSL
+ns9AeHwELUYb7an4Ghvs0vmppbBDTN6I6_wPtNCxAcWP_sAjMmhQGueAuT8KB1tbJqyTt2zZBkChTQTLeOGivBlNoJ1x1bl37OasI29qT7P3QZx_-O_5kBQXwHSCc5FiNfa79i4R2vgRSZxIPQA1wQkuk2ZF7FVW3jOl_8
+-OXC79GSYH7vH5QcTSdi5INYr7oBeG9Uttnbzr9Zoi2amFEZe2ijVwCyT2ZmbXbPI_8vnBtiEZuNxSwiky4b1qZz0Ar6eSro1RTzuBj3ATCh_4Kmw6TvNlEsDBrX0-0g7CvUokM11XOJEEdZJ9pjfppyrK5G6e0Dqj08Uo
+G5dAsbR1Kp4p8FN1cGWodqNH9Vv08VjKIdFaJMsO-h9ujdsdHvgE2BdVnAT8ipjUgqeH1-_A6spFLst_9tFxwzYVOKGDuZLp64-gciwM5qLWute2yC9xeyCWttQ
+[ec2-user@ip-172-31-5-19 ~]$
+create custom policy to run ec2 instances and add to role and then test dry-run.
+==============================================================================================================================================================
+Activity 16: STS Decode
+
+Copy error message from above.
+r_Jrs3IJR8jqrvbB6z7WKv1aOA9eXUuiiMivmVdZAX4CkdKae-Po-TQgnavyBhGE6UuV8nZ3eUqCrJuZ1Br06hf8gaokN83B9k48ieyTNQZ-arQsjLGUaAE6FGFH_7n_1YUuVeTuUlRBmYR7OIq0YEenComWupG1WGrYhLYhReHF2jfP5ISlb1tWCi50XlSpts_zwSxEhpFUkfSsUOSpQYuuy-O_3Gwp9PaUFYjXOxIFQNzcLSLns9AeHwELUYb7an4Ghvs0vmppbBDTN6I6_wPtNCxAcWP_sAjMmhQGueAuT8KB1tbJqyTt2zZBkChTQTLeOGivBlNoJ1x1bl37OasI29qT7P3QZx_-O_5kBQXwHSCc5FiNfa79i4R2vgRSZxIPQA1wQkuk2ZF7FVW3jOl_8-OXC79GSYH7vH5QcTSdi5INYr7oBeG9Uttnbzr9Zoi2amFEZe2ijVwCyT2ZmbXbPI_8vnBtiEZuNxSwiky4b1qZz0Ar6eSro1RTzuBj3ATCh_4Kmw6TvNlEsDBrX0-0g7CvUokM11XOJEEdZJ9pjfppyrK5G6e0Dqj08UoG5dAsbR1Kp4p8FN1cGWodqNH9Vv08VjKIdFaJMsO-h9ujdsdHvgE2BdVnAT8ipjUgqeH1-_A6spFLst_9tFxwzYVOKGDuZLp64-gciwM5qLWute2yC9xeyCWttQ
+
+aws sts decode-authorization-message --encoded-message r_Jrs3IJR8jqrvbB6z7WKv1aOA9eXUuiiMivmVdZAX4CkdKae-Po-TQgnavyBhGE6UuV8nZ3eUqCrJuZ1Br06hf8gaokN83B9k48ieyTNQZ-arQsjLGUaAE6FGFH_7n_1YUuVeTuUlRBmYR7OIq0YEenComWupG1WGrYhLYhReHF2jfP5ISlb1tWCi50XlSpts_zwSxEhpFUkfSsUOSpQYuuy-O_3Gwp9PaUFYjXOxIFQNzcLSLns9AeHwELUYb7an4Ghvs0vmppbBDTN6I6_wPtNCxAcWP_sAjMmhQGueAuT8KB1tbJqyTt2zZBkChTQTLeOGivBlNoJ1x1bl37OasI29qT7P3QZx_-O_5kBQXwHSCc5FiNfa79i4R2vgRSZxIPQA1wQkuk2ZF7FVW3jOl_8-OXC79GSYH7vH5QcTSdi5INYr7oBeG9Uttnbzr9Zoi2amFEZe2ijVwCyT2ZmbXbPI_8vnBtiEZuNxSwiky4b1qZz0Ar6eSro1RTzuBj3ATCh_4Kmw6TvNlEsDBrX0-0g7CvUokM11XOJEEdZJ9pjfppyrK5G6e0Dqj08UoG5dAsbR1Kp4p8FN1cGWodqNH9Vv08VjKIdFaJMsO-h9ujdsdHvgE2BdVnAT8ipjUgqeH1-_A6spFLst_9tFxwzYVOKGDuZLp64-gciwM5qLWute2yC9xeyCWttQ
+
+{                                                                                   
+    "DecodedMessage": "{\"allowed\":false,\"explicitDeny\":false,\"matchedStatements
+\":{\"items\":[]},\"failures\":{\"items\":[]},\"context\":{\"principal\":{\"id\":\"A
+ROAI3YCRBIBYMOYQVLK4:i-0a9366080fe159fff\",\"arn\":\"arn:aws:sts::558197791064:assum
+ed-role/FsEc2Role/i-0a9366080fe159fff\"},\"action\":\"ec2:RunInstances\",\"resource\
+":\"arn:aws:ec2:eu-west-2:558197791064:instance/*\",\"conditions\":{\"items\":[{\"ke
+y\":\"ec2:InstanceMarketType\",\"values\":{\"items\":[{\"value\":\"on-demand\"}]}},{
+\"key\":\"aws:Resource\",\"values\":{\"items\":[{\"value\":\"instance/*\"}]}},{\"key
+\":\"aws:Account\",\"values\":{\"items\":[{\"value\":\"558197791064\"}]}},{\"key\":\
+"ec2:AvailabilityZone\",\"values\":{\"items\":[{\"value\":\"eu-west-2a\"}]}},{\"key\
+":\"ec2:ebsOptimized\",\"values\":{\"items\":[{\"value\":\"false\"}]}},{\"key\":\"ec
+2:IsLaunchTemplateResource\",\"values\":{\"items\":[{\"value\":\"false\"}]}},{\"key\
+":\"ec2:InstanceType\",\"values\":{\"items\":[{\"value\":\"t2.micro\"}]}},{\"key\":\
+"ec2:RootDeviceType\",\"values\":{\"items\":[{\"value\":\"ebs\"}]}},{\"key\":\"aws:R
+egion\",\"values\":{\"items\":[{\"value\":\"eu-west-2\"}]}},{\"key\":\"aws:Service\"
+,\"values\":{\"items\":[{\"value\":\"ec2\"}]}},{\"key\":\"ec2:InstanceID\",\"values\
+":{\"items\":[{\"value\":\"*\"}]}},{\"key\":\"aws:Type\",\"values\":{\"items\":[{\"v
+alue\":\"instance\"}]}},{\"key\":\"ec2:Tenancy\",\"values\":{\"items\":[{\"value\":\
+"default\"}]}},{\"key\":\"ec2:Region\",\"values\":{\"items\":[{\"value\":\"eu-west-2
+\"}]}},{\"key\":\"aws:ARN\",\"values\":{\"items\":[{\"value\":\"arn:aws:ec2:eu-west-
+2:558197791064:instance/*\"}]}}]}}}"                                                
+}   
+=============================================================================================================================================================
+Activity 17 : Demo of getting information about Ec2 instance using meta-data
+==================================================================================
+[ec2-user@ip-172-31-5-19 ~]$ curl http://169.254.169.254/
+1.0
+2007-01-19
+2007-03-01
+2007-08-29
+...
+latest
+[ec2-user@ip-172-31-5-19 ~]$ curl http://169.254.169.254/latest/
+dynamic
+meta-data
+user-data
+[ec2-user@ip-172-31-5-19 ~]$ curl http://169.254.169.254/latest/meta-data/
+ami-id
+ami-launch-index
+ami-manifest-path
+block-device-mapping/
+events/
+hostname
+iam/
+identity-credentials/
+instance-action
+instance-id
+instance-type
+local-hostname
+local-ipv4
+mac
+metrics/
+network/
+placement/
+profile
+public-hostname
+public-ipv4
+public-keys/
+reservation-id
+security-groups
+services/
+[ec2-user@ip-172-31-5-19 ~]$ curl http://169.254.169.254/latest/meta-data/instance-id
+i-0a9366080fe159fff
+[ec2-user@iurl http://169.254.169.254/latest/meta-data/iam/
+info
+security-credentials/
+[ec2-user@ip-172-31-5-19 ~]$ curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
+FsEc2Role
+[ec2-user@ip-172-31-5-19 ~]$ curl http://169.254.169.254/latest/meta-data/iam/security-credentials/FsEc2Role
+{
+  "Code" : "Success",
+  "LastUpdated" : "2019-03-05T13:08:21Z",
+  "Type" : "AWS-HMAC",
+  "AccessKeyId" : "ASIAYD5ZOLFMFZBY75NC",
+  "SecretAccessKey" : "LJ2b6EmWptq4iWMWs9M18pZ8gaiwamiI0jXLAI0n",
+  "Token" : "FQoGZXIvYXdzEF8aDIyY0LE8qfvdEGQOcCK3A20jPVytfJatwb6CFL26gppWVnk63FwrTmvXmipr7z+fs/EwAHgvz8O948VHfYqV89FWht90fKhKLP83JqZO4JpOiOtCxKTow9LWKPeHorM57vhl6Zu9PVIDtjzHeDvrLR/LopX1iJ2LapTFzBTwNqEmIy99FgQwott9N9HubjGQK97yefqL+KA0JE9XAeXuQHDVxsKxSY1qUvRiovtpFWRXg5YETv+EP0CGOLPNAPukU6xQ42rXaV+v5QrBV0DErK9Z9S4Rdu7o4ScTc4/4yd6Tdd4ocw63G9rk2QGhIA9dG2PIsEjUl4vZ2b9lNViDweNiNSzvCrxIRHF46xMqhJiwRvAoCkhM5kAmgFBWY97HpwIeL8OPlzpMDjqLsM2Vh2Mi4ki/sRpm/Pa8dZVjrH5syuSkXpJi+V1X7huw31VDJN0Ch/CBPDjKWlsZYp/31+6vq02A3cPhjkdX48O5HUyse1B45Slp4U7fvTjTAKjX3CTXEoe+BoPronmrR7ApQP+y7ln0lbMAIvRQJrDjqWa27+wV/hmJ2oIqyJIgzBtiuBRfE0x20V7wFLVR7JwgTAGKhF27WPgo2+n54wU=",
+  "Expiration" : "2019-03-05T19:40:38Z"
+}[ec2-user@ip-172-31-5-19 ~]
+============================================================================================================================================================
+
+
