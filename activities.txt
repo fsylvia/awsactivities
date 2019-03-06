@@ -576,11 +576,12 @@ FsEc2Role
   "Code" : "Success",
   "LastUpdated" : "2019-03-05T13:08:21Z",
   "Type" : "AWS-HMAC",
-  "AccessKeyId" : "ASIAYD5ZOLFMFZBY75NC",
-  "SecretAccessKey" : "LJ2b6EmWptq4iWMWs9M18pZ8gaiwamiI0jXLAI0n",
-  "Token" : "FQoGZXIvYXdzEF8aDIyY0LE8qfvdEGQOcCK3A20jPVytfJatwb6CFL26gppWVnk63FwrTmvXmipr7z+fs/EwAHgvz8O948VHfYqV89FWht90fKhKLP83JqZO4JpOiOtCxKTow9LWKPeHorM57vhl6Zu9PVIDtjzHeDvrLR/LopX1iJ2LapTFzBTwNqEmIy99FgQwott9N9HubjGQK97yefqL+KA0JE9XAeXuQHDVxsKxSY1qUvRiovtpFWRXg5YETv+EP0CGOLPNAPukU6xQ42rXaV+v5QrBV0DErK9Z9S4Rdu7o4ScTc4/4yd6Tdd4ocw63G9rk2QGhIA9dG2PIsEjUl4vZ2b9lNViDweNiNSzvCrxIRHF46xMqhJiwRvAoCkhM5kAmgFBWY97HpwIeL8OPlzpMDjqLsM2Vh2Mi4ki/sRpm/Pa8dZVjrH5syuSkXpJi+V1X7huw31VDJN0Ch/CBPDjKWlsZYp/31+6vq02A3cPhjkdX48O5HUyse1B45Slp4U7fvTjTAKjX3CTXEoe+BoPronmrR7ApQP+y7ln0lbMAIvRQJrDjqWa27+wV/hmJ2oIqyJIgzBtiuBRfE0x20V7wFLVR7JwgTAGKhF27WPgo2+n54wU=",
+  "AccessKeyId" : "XXXXXXXX",
+  "SecretAccessKey" : "XXXXXXXXXXXX",
+  "Token" : "XXXXXX",
   "Expiration" : "2019-03-05T19:40:38Z"
-}[ec2-user@ip-172-31-5-19 ~]
+}
+[ec2-user@ip-172-31-5-19 ~]
 ============================================================================================================================================================
-
+Cleanup
 
