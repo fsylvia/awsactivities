@@ -21,4 +21,21 @@ Activity 1: CodeCommit
  5. add code. git status, git add, git commit -m "", git push.
  6. check codecommit if all files have been added to CodeCommit
  ============================================================================================================================================
+ Activity 3 : Code Pipeline 
+ ==================================
+ 1. create pipeline (add stages source, build, staging)
+ 2. create IAM service role
+ 3. verify if code is deployed into elastic bean stalk
+ 4. Add more stages to pipeline (manual approval, deploy to prod)
+ 5. Test by making changes in code and observe application moving through the stages
+ ============================================================================================================================================
+  Activity 4 : Code Build 
+ ==================================
+ 1. edit code pipeline to create a new stage that builds and tests the code. configure build to use buildspec.yml
+ 2. test without buildspec.yml
+ 3. test with buildspec.yml after altering the code
+ 4. test codepipeline after fixing the code
+ ============================================================================================================================================
+ 
+ ============================================================================================================================================
  
