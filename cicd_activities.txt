@@ -57,3 +57,20 @@ Activity 1: CodeCommit
 	b. test deployment
 	c. cleanup - delete asg, goto cloud formation and delete code deployment stack, delete bluegreendemoapplication
  ============================================================================================================================================
+ AWS CloudFormation:
+ =======================
+ Activity 1: 
+ 1. create a cloud formation template to create one ec2 instance.
+ 2. create a cloudformation stack with this template
+ 3. objserve the various properties 
+ 4. modify the template to create 1 ec2 instance, 1 elastic ip, 2 security groups with description provided by user.
+ 5. create stack with modified template
+ 6. observe the changes
+ 7. modify the template such that it fails. say a invalid ami id
+ 8. update the template and create a stack with rolback.
+ 9. Observe that cloudformation will rollback to the previous working state.
+ 10. create stack with template with error with rollback on failure option checked.
+ 11. observe that the create failed and rollsback. All other created resources will be deleted.
+ 12. clean up environment
+ ============================================================================================================================================
+ 
