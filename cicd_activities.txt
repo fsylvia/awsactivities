@@ -36,6 +36,24 @@ Activity 1: CodeCommit
  3. test with buildspec.yml after altering the code
  4. test codepipeline after fixing the code
  ============================================================================================================================================
- 
+ Activity 5 : Code Deploy - In place deployment
+ ==============================================
+ 1. Create a deployment
+	a. choose deployment type
+	b. configure instances
+	c. name application
+	d. select revision, source code
+	e. create a deployment group
+	f. select a service role
+	g. choose deployment configuration
+	h. start deployment.
+	i. test
+	j. cleanup
  ============================================================================================================================================
- 
+ Activity 6: Blue green deployment
+ ==============================================
+ 1. create a blue green deployment	
+	A. configurations : deployment name, application name, asg name, load balancer name, service role name, key pair name
+	b. test deployment
+	c. cleanup - delete asg, goto cloud formation and delete code deployment stack, delete bluegreendemoapplication
+ ============================================================================================================================================
