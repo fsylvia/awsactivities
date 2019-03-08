@@ -73,4 +73,20 @@ Activity 1: CodeCommit
  11. observe that the create failed and rollsback. All other created resources will be deleted.
  12. clean up environment
  ============================================================================================================================================
- 
+ AWS cloudwatch : Monitoring
+===================
+Activities
+1. Create alarm for ec2 network in. 
+2. Enable cloud watch logs
+3. Create a cloudwatch event that triggers a cloud watch alarm when a code pipeline stage failed.
+4. experiment with scheduled clourdwatch event
+==================================================================================================================
+AWS XRay : 
+=====================
+1. create an xray sample and monitor / trace errors.
+==================================================================================================================
+AWS CloudTrail : 
+=====================
+1. List and search through cloudtrail logs and create a Sns topic on finding a match for Delete.
+==================================================================================================================
+cleanup
