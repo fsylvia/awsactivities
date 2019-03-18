@@ -1,0 +1,21 @@
+AWS SQS
+=================
+1. create and configure a standard queue without Dead Letter Queue. "fsfirstqueue"
+2. Send a message to the queue.
+3. Simulate a consumer
+4. create a Dead Letter Queue. (A standard queue) "fsdlq"
+5. Configure the first queue fsfirstqueue and set up redrive policy pointing to "fsdlq" with max recieve as 2.
+6. Simulate a consumer, do not process the message 2 times and observe it going to the DLQ.
+7. Create a FIFO queue (us n virginia region only), enable Content based deduplication.
+8. send messages to the queue. Send duplicate messages to the queue. and observe.
+9. send another message.
+10. Consume messages
+=========================================================================================================================================================
+AWS SNS:
+=================
+1. create a SNS topic
+2. add subscriptions to the topic (a email and sqs queue)
+3. send messages to the topic.
+4. observe sqs queus and email
+=========================================================================================================================================================
+
